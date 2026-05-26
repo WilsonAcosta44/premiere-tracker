@@ -1,11 +1,14 @@
 import { useState, useRef } from 'react';
 import PLAN from './data/plan';
-import { useAuth }     from './hooks/useAuth';
-import { useProgress } from './hooks/useProgress';
-import { useNotes }    from './hooks/useNotes';
-import Sidebar         from './components/Sidebar';
-import PhaseView       from './components/PhaseView';
-import LoginScreen     from './components/LoginScreen';
+import { useAuth }             from './hooks/useAuth';
+import { useProgress }         from './hooks/useProgress';
+import { useNotes }            from './hooks/useNotes';
+import { useShareSettings }    from './hooks/useShareSettings';
+import { useViewerAccess }     from './hooks/useViewerAccess';
+import Sidebar                 from './components/Sidebar';
+import PhaseView               from './components/PhaseView';
+import LoginScreen             from './components/LoginScreen';
+import ViewerDashboard         from './components/ViewerDashboard';
 
 function buildPhaseStats(phases, completed) {
   return phases.map((phase) => {
@@ -17,14 +20,17 @@ function buildPhaseStats(phases, completed) {
 }
 
 export default function App() {
-  const { user, loading, signIn, signOut }         = useAuth();
-  const [activePhaseId, setActivePhaseId]          = useState('phase-1');
-  const { completed, toggle, reset, importProgress } = useProgress(user?.uid);
-  const { notes, setNote, importNotes }              = useNotes(user?.uid);
+  const { user, loading, signIn, signOut }            = useAuth();
+  const [activePhaseId, setActivePhaseId]             = useState('phase-1');
+  const { completed, toggle, reset, importProgress }  = useProgress(user?.uid);
+  const { notes, setNote, importNotes }               = useNotes(user?.uid);
+  const { viewers, addViewer, removeViewer }          = useShareSettings(user?.uid, user);
+  const { viewerAccess, viewerLoading }               = useViewerAccess(user);
+  const [viewingGrant, setViewingGrant]               = useState(null); // { ownerUID, ownerName, ownerPhoto }
   const fileInputRef = useRef(null);
 
-  // ── Auth states ──────────────────────────────────────────────────────────
-  if (loading) {
+  // ── Auth loading ─────────────────────────────────────────────────────────
+  if (loading || viewerLoading) {
     return (
       <div className="app-loading" aria-label="Loading">
         <span className="app-loading-icon">🎬</span>
@@ -36,7 +42,19 @@ export default function App() {
     return <LoginScreen onSignIn={signIn} />;
   }
 
-  // ── Signed in ────────────────────────────────────────────────────────────
+  // ── Viewer mode ──────────────────────────────────────────────────────────
+  if (viewingGrant) {
+    return (
+      <ViewerDashboard
+        ownerUID={viewingGrant.ownerUID}
+        ownerName={viewingGrant.ownerName}
+        ownerPhoto={viewingGrant.ownerPhoto}
+        onClose={() => setViewingGrant(null)}
+      />
+    );
+  }
+
+  // ── Owner dashboard ──────────────────────────────────────────────────────
   const handleExport = () => {
     const data = {
       exportedAt: new Date().toISOString(),
@@ -104,6 +122,11 @@ export default function App() {
         onImport={() => fileInputRef.current.click()}
         user={user}
         onSignOut={signOut}
+        viewers={viewers}
+        onAddViewer={addViewer}
+        onRemoveViewer={removeViewer}
+        viewerAccess={viewerAccess}
+        onViewProgress={setViewingGrant}
       />
       <main className="main">
         {activePhase && (
