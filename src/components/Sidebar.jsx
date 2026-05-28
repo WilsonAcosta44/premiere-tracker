@@ -110,14 +110,27 @@ export default function Sidebar({
   // Viewer access
   viewerAccess,
   onViewProgress,
+  // Mobile
+  isOpen,
+  onClose,
 }) {
+  const handleSelectPhase = (id) => {
+    onSelectPhase(id);
+    onClose?.();
+  };
+
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar${isOpen ? ' open' : ''}`}>
       {/* ── App header + overall progress ── */}
       <div className="sidebar-header">
         <div className="sidebar-brand">
           <span className="sidebar-brand-icon">🎬</span>
           <span className="sidebar-brand-name">Premiere Tracker</span>
+          <button className="sidebar-close-btn" onClick={onClose} aria-label="Close menu">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round"/>
+            </svg>
+          </button>
         </div>
         <div className="sidebar-overall">
           <div className="sidebar-overall-row">
@@ -142,7 +155,7 @@ export default function Sidebar({
             <button
               key={phase.id}
               className={`sidebar-phase${isActive ? ' active' : ''}`}
-              onClick={() => onSelectPhase(phase.id)}
+              onClick={() => handleSelectPhase(phase.id)}
               aria-current={isActive ? 'page' : undefined}
             >
               <div className="sidebar-phase-top">

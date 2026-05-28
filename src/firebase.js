@@ -3,12 +3,12 @@ import { getAuth, GoogleAuthProvider }                from 'firebase/auth';
 import { initializeFirestore, persistentLocalCache }  from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey:            'AIzaSyDFR_hg9dQSCFB1Phb0PX2BR9-b_fas6ko',
-  authDomain:        'premiere-tracker.firebaseapp.com',
-  projectId:         'premiere-tracker',
-  storageBucket:     'premiere-tracker.firebasestorage.app',
-  messagingSenderId: '526594542038',
-  appId:             '1:526594542038:web:a54c38169b97b229effc77',
+  apiKey:            import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId:         import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket:     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId:             import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
 const app = initializeApp(firebaseConfig);
